@@ -655,14 +655,14 @@ const EX = {
 };
 
 // ===== Programa =====
-// Cada item: [id, rótulo exibido, opcional?]
+// Cada item: [id, rótulo exibido, opcional?, 'solo' = sem par]
 const PROGRAM = [
   { id: 'wu', short: 'Aquec.', title: 'General Warm Up', sub: 'Aquecimento geral', circuit: true, items: [
     ['neck4'], ['pump'], ['sled'], ['medball'], ['catcamel'], ['clam'], ['hfiso']
   ]},
   { id: 'd1', short: 'Dia 1', title: 'Lower S&C / Upper Mobility', items: [
     ['copen'], ['tib'], ['vmo'], ['ssrdl'], ['sgm'], ['hfr', 'Hip Flexor'], ['blcalf'],
-    ['pullover', 'Pullover', 1], ['jcurl', 'Jefferson Curl', 1], ['tricep', 0, 1], ['bicep', 0, 1]
+    ['pullover', 'Pullover', 1], ['jcurl', 'Jefferson Curl', 1, 'solo'], ['tricep', 0, 1], ['bicep', 0, 1]
   ]},
   { id: 'd2', short: 'Dia 2', title: 'Upper S&C / Lower Long Range', items: [
     ['pullup'], ['atgpress'], ['atgrow'], ['dip'], ['flatpress'], ['zottman'], ['facepull'], ['shrug'],
@@ -670,7 +670,7 @@ const PROGRAM = [
   ]},
   { id: 'd3', short: 'Dia 3', title: 'Lower S&C / Upper Mobility', items: [
     ['atgss'], ['tib'], ['cqhyd'], ['ssrdl'], ['horse'], ['nordic'], ['jcurl'], ['hfr', 'Hip Flexors'], ['blcalf'],
-    ['lrfly', 0, 1], ['powell', 0, 1], ['pullover', 'DB Pullover', 1], ['thor', 0, 1], ['bicep'], ['tricep']
+    ['lrfly', 0, 1], ['powell', 0, 1], ['pullover', 'DB Pullover', 1], ['thor', 0, 1, 'solo'], ['bicep'], ['tricep']
   ]},
   { id: 'd4', short: 'Dia 4', title: 'Upper S&C / Lower Long Range', items: [
     ['dip'], ['gorilla'], ['sapress'], ['trap3'], ['zottman'], ['ql'], ['shrug'], ['vmo'],
@@ -1135,10 +1135,13 @@ const ANIM = {
 
   // ---------- Programa em supersets ----------
   function groups(day) {
-    const items = day.items.map(([id, label, opt]) => ({ id, label: label || EX[id].name, opt: !!opt }));
+    const items = day.items.map(([id, label, opt, solo]) => ({ id, label: label || EX[id].name, opt: !!opt, solo: solo === 'solo' }));
     if (day.circuit) return [{ circuit: true, items }];
     const out = [];
-    for (let i = 0; i < items.length; i += 2) out.push({ items: items.slice(i, i + 2) });
+    for (let i = 0; i < items.length;) {
+      if (items[i].solo || !items[i + 1] || items[i + 1].solo) { out.push({ items: [items[i]] }); i += 1; }
+      else { out.push({ items: [items[i], items[i + 1]] }); i += 2; }
+    }
     return out;
   }
   const LETTERS = 'ABCDEFGH';
